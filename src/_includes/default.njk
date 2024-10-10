@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    {%- if eleventy.env.runMode === "serve" %}
+      {# External files (local dev live reload will refresh without page reload) #}
+      <link rel="stylesheet" href="{% getBundleFileUrl "css", "styles" %}">
+    {%- else  %}
+      {# Inlined CSS (fastest site performance in production) #}
+      <style>{% getBundle "css", "styles" %}</style>
+    {%- endif %}
+    {%- css "styles" %}{% renderFile "./src/assets/sass/styles.scss" %}{% endcss %}
+  </head>
+  <body>
+    <header>
+      <h1>{{ title }}</h1>
+    </header>
+    <main>
+      {{ content | safe }}
+    </main>
+  </body>
+</html>

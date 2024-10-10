@@ -1,0 +1,15 @@
+{
+  "name": "eleventy-render-custom",
+  "version": "1.0.0",
+  "description": "This is a reduced test case for Eleventy Render and Custom format",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "eleventy",
+    "start": "eleventy --serve"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^3.0.0",
+    "sass": "^1.79.4"
+  }
+}
