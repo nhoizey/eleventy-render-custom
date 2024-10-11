@@ -1,5 +1,4 @@
 import path from "node:path";
-import fs from "node:fs";
 
 // Builders
 import * as sass from "sass";
@@ -8,27 +7,27 @@ import * as sass from "sass";
 import { EleventyRenderPlugin } from "@11ty/eleventy";
 
 export const assets = (eleventyConfig, userOptions = {}) => {
+  // https://github.com/11ty/eleventy-plugin-bundle#bundle-sass-with-the-render-plugin
+  // https://www.11ty.dev/docs/languages/custom/#example-add-sass-support-to-eleventy
   eleventyConfig.addPlugin(EleventyRenderPlugin);
-
+  eleventyConfig.addBundle("css");
   eleventyConfig.addTemplateFormats("scss");
+
+  // https://www.11ty.dev/docs/languages/custom/#example-add-sass-support-to-eleventy
+  // TODO: add sourcemap generation, see https://github.com/sass/dart-sass/issues/1594#issuecomment-1013208452
   eleventyConfig.addExtension("scss", {
     outputFileExtension: "css",
     useLayouts: false,
     compile: async function (inputContent, inputPath) {
-      console.log("##########################################");
-      console.log(`File: ${inputPath}`);
-      console.log("File content from renderFile (inputContent):");
+      console.log(`
+Content of file "${inputPath}":
+-------------------------------------------------------------
+`);
       console.dir(inputContent);
-
-      const fileContent = fs.readFileSync(inputPath, "utf-8");
-      console.log("");
-      console.log("File content from fs.readFileSync:");
-      console.dir(fileContent);
-
-      if (undefined === inputContent) return;
-
-      // Only convert Sass files from the Sass assets folder
-      if (!inputPath.includes("src/assets/sass")) return;
+      console.log(`
+-------------------------------------------------------------
+`);
+      if (!inputContent) return;
 
       const parsed = path.parse(inputPath);
       let sassResult;
@@ -40,16 +39,20 @@ export const assets = (eleventyConfig, userOptions = {}) => {
           sourceMap: false,
         });
       } catch (error) {
-        console.error("☠☠☠ Error! ☠☠☠");
+        console.error("☠️☠️☠️ Error! ☠️☠️☠️");
         console.dir(error);
       }
 
       this.addDependencies(inputPath, sassResult.loadedUrls);
 
-      return async (data) => sassResult.css;
+      return async (data) => {
+        return sassResult.css;
+      };
     },
     compileOptions: {
       permalink: (contents, inputPath) => {
+        // Don't convert Sass files with filenames starting with a '_'
+        // https://www.11ty.dev/docs/languages/custom/#compileoptions.permalink-to-override-permalink-compilation
         let parsed = path.parse(inputPath);
         if (parsed.name.startsWith("_")) {
           return false;
